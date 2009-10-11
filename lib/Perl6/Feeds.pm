@@ -3,7 +3,7 @@ package Perl6::Feeds;
     use warnings;
     use Filter::Simple;
     use re 'eval';
-    our $VERSION = '0.1';
+    our $VERSION = '0.11';
 
     FILTER_ONLY code => sub {
         s/(?<!\$)#.*//g;
@@ -23,18 +23,15 @@ package Perl6::Feeds;
             (?= ==+>+ | [\}\]);] | $ )
         }{
             'sub{@_}->(' . do {
-                my ($source, $action) = @+{qw/source action/};
+				my ($source, $action) = @+{qw/source action/};
                 $+{merge} eq '<' and "($action), ($source)" or
                 $+{merge} eq '>' and "($source), ($action)" or do {
                     for ($action) {
-                        if (/^(?:(?:my|our|local)\W|[\$\@\%\&\*])/) {
-                            $_ .= '='
-                        } else {
-                            $source  = ",$source" unless /^\w+\s*(?:(?=\{)$nested)?$/;
-                            $source .= ')'        if s/\)$//;
-                        }
-                    }
-                    "$action $source"
+						 $action .= '=', last  if /^(?:(?:my|our|local)\W|[$@%&*])/;
+						 $source  = ",$source" unless /^\w+\s*(?:(?=\{)$nested)?$/;
+						 $source .= ')'        if s/\)$//;
+					}
+					"$action $source"
                 }
             } . ')'
         }xse
@@ -46,7 +43,7 @@ Perl6::Feeds - implements perl6 feed operators in perl5 via source filtering
 
 =head1 VERSION
 
-version 0.1
+version 0.11
 
 this code is currently in beta, bug reports welcome
 
