@@ -1,6 +1,6 @@
 ---
 name: Perl6-Feeds
-version: 0.11
+version: 0.12
 author:
   - 'Eric Strom <ejstrom@gmail.com>'
 abstract: implements perl6 feed operators in perl5 via source filtering
@@ -14,7 +14,7 @@ configure_requires:
 provides:
   Perl6::Feeds:
     file: lib/Perl6/Feeds.pm
-    version: 0.11
+    version: 0.12
 generated_by: Module::Build version 0.35
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
