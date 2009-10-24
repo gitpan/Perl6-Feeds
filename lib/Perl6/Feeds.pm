@@ -4,7 +4,7 @@ package Perl6::Feeds;
     use warnings;
     use Filter::Simple;
     use re 'eval';
-    our $VERSION = '0.13';
+    our $VERSION = '0.14';
 
     FILTER_ONLY code => sub {
         s/(?<!\$)#.*//g;
@@ -44,7 +44,7 @@ Perl6::Feeds - implements perl6 feed operators in perl5 via source filtering
 
 =head1 VERSION
 
-version 0.12
+version 0.14
 
 requires perl version 5.9.5 or higher
 
