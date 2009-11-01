@@ -1,10 +1,10 @@
 package Perl6::Feeds;
-	require 5.009_005;
+    require 5.009_005;
     use strict;
     use warnings;
     use Filter::Simple;
     use re 'eval';
-    our $VERSION = '0.14';
+    our $VERSION = '0.20';
 
     FILTER_ONLY code => sub {
         s/(?<!\$)#.*//g;
@@ -18,7 +18,7 @@ package Perl6::Feeds;
             (?: ^ | (?<= [\{[(;] ) )
               \s*
                 (?<source> $expression )
-                  \s*  ==+>(?<merge> [<>]?+ )  \s*
+                  \s*  ==+>(?<push> >?+ )(?<merge> [<>]?+ )  \s*
                 (?<action> $expression )
               \s*
             (?= ==+>+ | [\}\]);] | $ )
@@ -28,9 +28,10 @@ package Perl6::Feeds;
                 $+{merge} eq '<' and "($action), ($source)" or
                 $+{merge} eq '>' and "($source), ($action)" or do {
                     for ($action) {
-                         $action .= '=', last  if /^(?:(?:my|our|local)\W|[$@%&*])/;
-                         $source  = ",$source" unless /^\w+\s*(?:(?=\{)$nested)?$/;
-                         $source .= ')'        if s/\)$//;
+                         $action  = "push $_,", last if $+{push};
+                         $action .= '=', last        if /^(?:(?:my|our|local)\W|[$@%&*])/;
+                         $source  = ",$source"       unless /^\w+\s*(?:(?=\{)$nested)?$/;
+                         $source .= ')'              if s/\)$//;
                     }
                     "$action $source"
                 }
@@ -44,7 +45,7 @@ Perl6::Feeds - implements perl6 feed operators in perl5 via source filtering
 
 =head1 VERSION
 
-version 0.14
+version 0.20
 
 requires perl version 5.9.5 or higher
 
@@ -64,15 +65,27 @@ rather than the right to left, bottom up order imposed by function nesting.
     1 .. 3000
         ==> map [$_, $_ ** 2 ]
         ==> grep {$$_[1] =~ s/(([^0])\2{3,})/ ($1) /g}
-        ==> our @list                            # assignments start with /my|our|local|[$@%&*]/
-        ==> map {@$_ ==> map "[$_]"              # nesting is fine
-                     ==> join '^2 ==> '}         # strings are safe
-        ==>> 'found '.@list.' numbers: '         # appends a list  (never an assignment)
-        ==>< "\nnumbers with squares that ".     # prepends a list (never an assignment)
-             "have non zero runs of 4+ digits:\n"  # this isn't in the spec, but might be useful
-        ==>  join ("\n")                         # closed argument lists are adjusted
-        ==>> (@list ==> map $$_[0] ==> join ' ')
-      =====> print;                              # feed arrows match /==+>[<>]?/
+        ==> our @list                             # assignments start with /my|our|local|[$@%&*]/
+        ==> map {@$_ ==> map "[$_]"               # nesting is fine
+                     ==> join '^2 ==> '}          # strings are safe
+        ==>>> 'found '.@list.' numbers: '         # appends a list
+        ==>>< "\nnumbers with squares that ".     # prepends a list
+             "have non zero runs of 4+ digits:\n" #   both of these are not in the perl6 spec
+        ==>  join ("\n")                          # closed argument lists are adjusted
+        ==>>> (@list ==> map $$_[0] ==> join ' ')
+      =====> print;                               # feed arrows match /==+>[<>]?/
+
+=head1 SYNTAX
+
+    1 .. 10 ==> join ", " ==> print;  # print join ", " => 1 .. 10;
+
+    1 .. 10 ==> my @a;                # my @a = 1 .. 10;
+
+    20 .. 30 ==>> @a;                 # push @a, 20 .. 30;
+
+    @a ==>>> "appended" ==> print;    # print @a, "appended";
+
+    @a ==>>< "prepended" ==> print;   # print "prepended", @a;
 
 =head1 AUTHOR
 
